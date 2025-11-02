@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Water Conservation Physics Simulation</title>
+    
+    <!-- Load P5.js and Matter.js from CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        h1 {
+            color: white;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 2em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .subtitle {
+            color: rgba(255,255,255,0.9);
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 1.1em;
+        }
+        
+        #canvas-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        
+        .controls {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            max-width: 800px;
+            width: 100%;
+        }
+        
+        .control-section {
+            margin-bottom: 20px;
+        }
+        
+        .control-section h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 5px;
+        }
+        
+        .slider-container {
+            margin: 15px 0;
+        }
+        
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .slider-value {
+            background: #667eea;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-family: 'Courier New', monospace;
+            min-width: 80px;
+            text-align: center;
+        }
+        
+        input[type="range"] {
+            width: 100%;
+            height: 8px;
+            border-radius: 5px;
+            background: #ddd;
+            outline: none;
+            -webkit-appearance: none;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            transition: all 0.2s;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb:hover {
+            background: #764ba2;
+            transform: scale(1.1);
+        }
+        
+        input[type="range"]::-moz-range-thumb {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .stat-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+            margin-bottom: 5px;
+        }
+        
+        .stat-value {
+            font-size: 1.8em;
+            font-weight: bold;
+        }
+        
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-top: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 3px;
+            border: 1px solid #ccc;
+        }
+        
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        button:hover {
+            background: #764ba2;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(118, 75, 162, 0.4);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+    <h1>💧 Water Conservation Physics Simulation</h1>
+    <p class="subtitle">Optimize the AquaArc sprinkler to minimize water waste!</p>
+    
+    <div id="canvas-container"></div>
+    
+    <div class="controls">
+        <div class="control-section">
+            <h3>🎯 AquaArc Smart Sprinkler Controls</h3>
+            
+            <div class="slider-container">
+                <div class="slider-label">
+                    <span>Launch Angle (θ)</span>
+                    <span class="slider-value" id="angle-value">45°</span>
+                </div>
+                <input type="range" id="angle-slider" min="20" max="80" value="45" step="1">
+            </div>
+            
+            <div class="slider-container">
+                <div class="slider-label">
+                    <span>Power (v₀)</span>
+                    <span class="slider-value" id="power-value">8.0</span>
+                </div>
+                <input type="range" id="power-slider" min="3" max="15" value="8" step="0.5">
+            </div>
+            
+            <button onclick="resetSimulation()">🔄 Reset Simulation</button>
+        </div>
+        
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color" style="background: #4CAF50;"></div>
+                <span>Garden (Target Area)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #888;"></div>
+                <span>Wasted Area (Sidewalk)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #2196F3;"></div>
+                <span>Efficient Water</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #F44336;"></div>
+                <span>Wasted Water</span>
+            </div>
+        </div>
+        
+        <div class="stats">
+            <div class="stat-box">
+                <div class="stat-label">Static Sprinkler Waste</div>
+                <div class="stat-value" id="static-waste">0</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">AquaArc Waste</div>
+                <div class="stat-value" id="smart-waste">0</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Water Saved</div>
+                <div class="stat-value" id="water-saved">0%</div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Matter.js module aliases
+        const Engine = Matter.Engine;
+        const World = Matter.World;
+        const Bodies = Matter.Bodies;
+        const Body = Matter.Body;
+        
+        // Physics engine
+        let engine;
+        let world;
+        
+        // Particles
+        let staticParticles = [];
+        let smartParticles = [];
+        
+        // Sprinkler settings
+        let smartAngle = 45;
+        let smartPower = 8;
+        
+        // Emission timers
+        let staticEmitTimer = 0;
+        let smartEmitTimer = 0;
+        const EMIT_INTERVAL = 10; // frames between emissions
+        
+        // Areas
+        let gardenArea;
+        let wasteArea;
+        
+        // Statistics
+        let staticWasteCount = 0;
+        let smartWasteCount = 0;
+        
+        // Canvas dimensions
+        const canvasWidth = 800;
+        const canvasHeight = 500;
+        
+        function setup() {
+            const canvas = createCanvas(canvasWidth, canvasHeight);
+            canvas.parent('canvas-container');
+            
+            // Create Matter.js engine
+            engine = Engine.create();
+            world = engine.world;
+            world.gravity.y = 1; // Standard gravity
+            
+            // Define areas
+            gardenArea = {
+                x: 300,
+                y: 400,
+                width: 200,
+                height: 100
+            };
+            
+            wasteArea = {
+                x: 550,
+                y: 400,
+                width: 250,
+                height: 100
+            };
+            
+            // Ground
+            const ground = Bodies.rectangle(canvasWidth / 2, canvasHeight - 10, canvasWidth, 20, {
+                isStatic: true,
+                friction: 0.5
+            });
+            World.add(world, ground);
+            
+            // Setup sliders
+            document.getElementById('angle-slider').addEventListener('input', (e) => {
+                smartAngle = parseFloat(e.target.value);
+                document.getElementById('angle-value').textContent = smartAngle + '°';
+            });
+            
+            document.getElementById('power-slider').addEventListener('input', (e) => {
+                smartPower = parseFloat(e.target.value);
+                document.getElementById('power-value').textContent = smartPower.toFixed(1);
+            });
+        }
+        
+        function draw() {
+            background(135, 206, 235); // Sky blue
+            
+            // Update physics
+            Engine.update(engine);
+            
+            // Draw ground
+            fill(101, 67, 33);
+            noStroke();
+            rect(0, canvasHeight - 30, canvasWidth, 30);
+            
+            // Draw garden area (target)
+            fill(76, 175, 80);
+            stroke(0);
+            strokeWeight(2);
+            rect(gardenArea.x, gardenArea.y, gardenArea.width, gardenArea.height);
+            
+            // Draw waste area (sidewalk)
+            fill(136, 136, 136);
+            rect(wasteArea.x, wasteArea.y, wasteArea.width, wasteArea.height);
+            
+            // Draw labels
+            fill(255);
+            noStroke();
+            textSize(14);
+            textAlign(CENTER);
+            text('Garden', gardenArea.x + gardenArea.width / 2, gardenArea.y + gardenArea.height / 2);
+            text('Sidewalk', wasteArea.x + wasteArea.width / 2, wasteArea.y + wasteArea.height / 2);
+            
+            // Sprinkler positions
+            const staticSprinklerX = 100;
+            const staticSprinklerY = canvasHeight - 30;
+            const smartSprinklerX = 150;
+            const smartSprinklerY = canvasHeight - 30;
+            
+            // Draw sprinklers
+            drawSprinkler(staticSprinklerX, staticSprinklerY, 45, 'Static', '#F44336');
+            drawSprinkler(smartSprinklerX, smartSprinklerY, smartAngle, 'AquaArc', '#2196F3');
+            
+            // Emit particles
+            staticEmitTimer++;
+            smartEmitTimer++;
+            
+            if (staticEmitTimer >= EMIT_INTERVAL) {
+                emitParticle(staticSprinklerX, staticSprinklerY, 45, 12, staticParticles, true);
+                staticEmitTimer = 0;
+            }
+            
+            if (smartEmitTimer >= EMIT_INTERVAL) {
+                emitParticle(smartSprinklerX, smartSprinklerY, smartAngle, smartPower, smartParticles, false);
+                smartEmitTimer = 0;
+            }
+            
+            // Update and draw particles
+            updateParticles(staticParticles, true);
+            updateParticles(smartParticles, false);
+            
+            // Update statistics display
+            updateStats();
+        }
+        
+        function drawSprinkler(x, y, angle, label, color) {
+            push();
+            translate(x, y);
+            
+            // Sprinkler base
+            fill(80);
+            noStroke();
+            rect(-10, -20, 20, 20);
+            
+            // Sprinkler nozzle
+            rotate(-radians(angle));
+            fill(color);
+            rect(0, -5, 30, 10);
+            fill(50);
+            ellipse(30, 0, 8, 8);
+            
+            pop();
+            
+            // Label
+            fill(0);
+            noStroke();
+            textSize(12);
+            textAlign(CENTER);
+            text(label, x, y + 20);
+        }
+        
+        function emitParticle(x, y, angle, power, particleArray, isStatic) {
+            const angleRad = radians(angle);
+            const vx = cos(-angleRad) * power;
+            const vy = sin(-angleRad) * power;
+            
+            const particle = Bodies.circle(x + 30 * cos(-angleRad), y - 30 * sin(-angleRad), 4, {
+                restitution: 0.3,
+                friction: 0.1,
+                density: 0.001
+            });
+            
+            Body.setVelocity(particle, { x: vx, y: vy });
+            World.add(world, particle);
+            
+            particleArray.push({
+                body: particle,
+                isStatic: isStatic,
+                wasted: false,
+                lifetime: 0
+            });
+        }
+        
+        function updateParticles(particleArray, isStatic) {
+            for (let i = particleArray.length - 1; i >= 0; i--) {
+                const p = particleArray[i];
+                p.lifetime++;
+                
+                const pos = p.body.position;
+                
+                // Check if particle is in waste area
+                if (!p.wasted && pos.y >= wasteArea.y && pos.y <= wasteArea.y + wasteArea.height &&
+                    pos.x >= wasteArea.x && pos.x <= wasteArea.x + wasteArea.width) {
+                    p.wasted = true;
+                    if (isStatic) {
+                        staticWasteCount++;
+                    } else {
+                        smartWasteCount++;
+                    }
+                }
+                
+                // Draw particle
+                push();
+                if (p.wasted) {
+                    fill(244, 67, 54, 150); // Red for wasted
+                } else if (isStatic) {
+                    fill(33, 150, 243, 200); // Blue for static
+                } else {
+                    fill(33, 150, 243, 200); // Blue for smart
+                }
+                noStroke();
+                ellipse(pos.x, pos.y, 8, 8);
+                pop();
+                
+                // Remove old particles
+                if (p.lifetime > 300 || pos.y > canvasHeight + 50) {
+                    World.remove(world, p.body);
+                    particleArray.splice(i, 1);
+                }
+            }
+        }
+        
+        function updateStats() {
+            document.getElementById('static-waste').textContent = staticWasteCount;
+            document.getElementById('smart-waste').textContent = smartWasteCount;
+            
+            let savedPercentage = 0;
+            if (staticWasteCount > 0) {
+                const wasteReduction = staticWasteCount - smartWasteCount;
+                savedPercentage = Math.max(0, Math.round((wasteReduction / staticWasteCount) * 100));
+            }
+            document.getElementById('water-saved').textContent = savedPercentage + '%';
+        }
+        
+        function resetSimulation() {
+            // Remove all particles
+            for (let p of staticParticles) {
+                World.remove(world, p.body);
+            }
+            for (let p of smartParticles) {
+                World.remove(world, p.body);
+            }
+            
+            staticParticles = [];
+            smartParticles = [];
+            staticWasteCount = 0;
+            smartWasteCount = 0;
+            staticEmitTimer = 0;
+            smartEmitTimer = 0;
+            
+            updateStats();
+        }
+    </script>
+</body>
+</html>
