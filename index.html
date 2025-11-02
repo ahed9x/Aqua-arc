@@ -251,6 +251,39 @@
         button:active {
             transform: translateY(0);
         }
+        
+        .sprinkler-controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .sprinkler-control-box {
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .sprinkler-control-box h4 {
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+        
+        .toggle-button {
+            width: 100%;
+            padding: 10px 20px;
+            font-size: 0.95em;
+            margin-top: 5px;
+        }
+        
+        .toggle-button.active {
+            background: #4CAF50;
+        }
+        
+        .toggle-button.inactive {
+            background: #F44336;
+        }
     </style>
 </head>
 <body>
@@ -318,6 +351,21 @@
             </div>
             
             <button onclick="resetSimulation()">🔄 Reset Simulation</button>
+            
+            <div class="sprinkler-controls">
+                <div class="sprinkler-control-box" style="background: #fff3e0; border: 2px solid #FF9800;">
+                    <h4 style="color: #F57C00;">🔴 Static Sprinkler</h4>
+                    <button id="static-toggle" class="toggle-button active" onclick="toggleStaticSprinkler()">
+                        ⏸️ Stop Static
+                    </button>
+                </div>
+                <div class="sprinkler-control-box" style="background: #e3f2fd; border: 2px solid #2196F3;">
+                    <h4 style="color: #1976D2;">🔵 AquaArc Sprinkler</h4>
+                    <button id="smart-toggle" class="toggle-button active" onclick="toggleSmartSprinkler()">
+                        ⏸️ Stop AquaArc
+                    </button>
+                </div>
+            </div>
         </div>
         
         <div class="legend">
@@ -377,6 +425,10 @@
         // Sprinkler settings
         let smartAngle = 45;
         let smartPower = 8;
+        
+        // Sprinkler active states
+        let staticSprinklerActive = true;
+        let smartSprinklerActive = true;
         
         // Emission timers
         let staticEmitTimer = 0;
@@ -523,17 +575,20 @@
             drawSprinkler(smartSprinklerX, smartSprinklerY, smartAngle, 'AquaArc', '#2196F3');
             
             // Emit particles
-            staticEmitTimer++;
-            smartEmitTimer++;
-            
-            if (staticEmitTimer >= EMIT_INTERVAL) {
-                emitParticle(staticSprinklerX, staticSprinklerY, 45, 12, staticParticles, true);
-                staticEmitTimer = 0;
+            if (staticSprinklerActive) {
+                staticEmitTimer++;
+                if (staticEmitTimer >= EMIT_INTERVAL) {
+                    emitParticle(staticSprinklerX, staticSprinklerY, 45, 12, staticParticles, true);
+                    staticEmitTimer = 0;
+                }
             }
             
-            if (smartEmitTimer >= EMIT_INTERVAL) {
-                emitParticle(smartSprinklerX, smartSprinklerY, smartAngle, smartPower, smartParticles, false);
-                smartEmitTimer = 0;
+            if (smartSprinklerActive) {
+                smartEmitTimer++;
+                if (smartEmitTimer >= EMIT_INTERVAL) {
+                    emitParticle(smartSprinklerX, smartSprinklerY, smartAngle, smartPower, smartParticles, false);
+                    smartEmitTimer = 0;
+                }
             }
             
             // Update and draw particles
@@ -641,6 +696,32 @@
                 savedPercentage = Math.max(0, Math.round((wasteReduction / staticWasteCount) * 100));
             }
             document.getElementById('water-saved').textContent = savedPercentage + '%';
+        }
+        
+        function toggleStaticSprinkler() {
+            staticSprinklerActive = !staticSprinklerActive;
+            const button = document.getElementById('static-toggle');
+            
+            if (staticSprinklerActive) {
+                button.textContent = '⏸️ Stop Static';
+                button.className = 'toggle-button active';
+            } else {
+                button.textContent = '▶️ Start Static';
+                button.className = 'toggle-button inactive';
+            }
+        }
+        
+        function toggleSmartSprinkler() {
+            smartSprinklerActive = !smartSprinklerActive;
+            const button = document.getElementById('smart-toggle');
+            
+            if (smartSprinklerActive) {
+                button.textContent = '⏸️ Stop AquaArc';
+                button.className = 'toggle-button active';
+            } else {
+                button.textContent = '▶️ Start AquaArc';
+                button.className = 'toggle-button inactive';
+            }
         }
         
         function resetSimulation() {
