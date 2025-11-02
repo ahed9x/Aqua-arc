@@ -273,7 +273,7 @@
             </div>
             <div class="equation">
                 <div class="equation-title">Estimated Range:</div>
-                <div class="equation-formula">R ≈ (<span id="static-v0-3">12</span>² × sin(2×<span id="static-angle-3">45</span>°)) / <span id="static-g">1</span> = <span id="static-range">144</span></div>
+                <div class="equation-formula">R ≈ (<span id="static-v0-3">12</span>² × sin(2×<span id="static-angle-3">45</span>°)) / <span id="static-g">9.8</span> = <span id="static-range">144</span></div>
             </div>
         </div>
         
@@ -290,7 +290,7 @@
             </div>
             <div class="equation">
                 <div class="equation-title">Estimated Range:</div>
-                <div class="equation-formula">R ≈ (<span id="smart-v0-3">8.0</span>² × sin(2×<span id="smart-angle-3">45</span>°)) / <span id="smart-g">1</span> = <span id="smart-range">64</span></div>
+                <div class="equation-formula">R ≈ (<span id="smart-v0-3">8.0</span>² × sin(2×<span id="smart-angle-3">45</span>°)) / <span id="smart-g">9.8</span> = <span id="smart-range">64</span></div>
             </div>
         </div>
     </div>
@@ -402,7 +402,7 @@
             // Create Matter.js engine
             engine = Engine.create();
             world = engine.world;
-            world.gravity.y = 1; // Standard gravity
+            world.gravity.y = 0.98; // Standard gravity (9.8 m/s² scaled down for visualization)
             
             // Define areas
             gardenArea = {
@@ -444,13 +444,15 @@
         }
         
         function updateFormulas() {
+            const gravity = 9.8;
+            
             // Static sprinkler (fixed values)
             const staticV0 = 12;
             const staticAngle = 45;
             const staticAngleRad = radians(staticAngle);
             const staticVx = staticV0 * cos(staticAngleRad);
             const staticVy = staticV0 * sin(staticAngleRad);
-            const staticRange = (staticV0 * staticV0 * sin(2 * staticAngleRad)) / 1;
+            const staticRange = (staticV0 * staticV0 * sin(2 * staticAngleRad)) / gravity;
             
             document.getElementById('static-v0').textContent = staticV0.toFixed(1);
             document.getElementById('static-v0-2').textContent = staticV0.toFixed(1);
@@ -460,14 +462,14 @@
             document.getElementById('static-angle-3').textContent = staticAngle;
             document.getElementById('static-vx').textContent = staticVx.toFixed(2);
             document.getElementById('static-vy').textContent = staticVy.toFixed(2);
-            document.getElementById('static-range').textContent = staticRange.toFixed(0);
-            document.getElementById('static-g').textContent = '1';
+            document.getElementById('static-range').textContent = staticRange.toFixed(1);
+            document.getElementById('static-g').textContent = gravity.toFixed(1);
             
             // Smart sprinkler (adjustable values)
             const smartAngleRad = radians(smartAngle);
             const smartVx = smartPower * cos(smartAngleRad);
             const smartVy = smartPower * sin(smartAngleRad);
-            const smartRange = (smartPower * smartPower * sin(2 * smartAngleRad)) / 1;
+            const smartRange = (smartPower * smartPower * sin(2 * smartAngleRad)) / gravity;
             
             document.getElementById('smart-v0').textContent = smartPower.toFixed(1);
             document.getElementById('smart-v0-2').textContent = smartPower.toFixed(1);
@@ -477,8 +479,8 @@
             document.getElementById('smart-angle-3').textContent = smartAngle;
             document.getElementById('smart-vx').textContent = smartVx.toFixed(2);
             document.getElementById('smart-vy').textContent = smartVy.toFixed(2);
-            document.getElementById('smart-range').textContent = smartRange.toFixed(0);
-            document.getElementById('smart-g').textContent = '1';
+            document.getElementById('smart-range').textContent = smartRange.toFixed(1);
+            document.getElementById('smart-g').textContent = gravity.toFixed(1);
         }
         
         function draw() {
