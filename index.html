@@ -78,6 +78,14 @@
             margin: 8px 0;
         }
         
+        .equation-formula span {
+            font-weight: bold;
+            color: #d32f2f;
+            background: rgba(255,255,255,0.7);
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+        
         .equation-description {
             font-size: 0.9em;
             color: #666;
@@ -250,21 +258,40 @@
     <p class="subtitle">Optimize the AquaArc sprinkler to minimize water waste!</p>
     
     <div class="physics-equations">
-        <h3>📐 Physics Equations</h3>
-        <div class="equation">
-            <div class="equation-title">Horizontal Velocity:</div>
-            <div class="equation-formula">vₓ = v₀ × cos(θ)</div>
-            <div class="equation-description">Where v₀ is initial power and θ is launch angle</div>
+        <h3>📐 Live Physics Calculations</h3>
+        
+        <!-- Static Sprinkler -->
+        <div style="background: #fff3e0; padding: 15px; border-radius: 10px; margin-bottom: 15px; border: 2px solid #FF9800;">
+            <h4 style="color: #F57C00; margin-bottom: 10px;">🔴 Static Sprinkler (Fixed)</h4>
+            <div class="equation">
+                <div class="equation-title">Horizontal Velocity:</div>
+                <div class="equation-formula">vₓ = <span id="static-v0">12</span> × cos(<span id="static-angle">45</span>°) = <span id="static-vx">8.49</span></div>
+            </div>
+            <div class="equation">
+                <div class="equation-title">Vertical Velocity:</div>
+                <div class="equation-formula">vᵧ = <span id="static-v0-2">12</span> × sin(<span id="static-angle-2">45</span>°) = <span id="static-vy">8.49</span></div>
+            </div>
+            <div class="equation">
+                <div class="equation-title">Estimated Range:</div>
+                <div class="equation-formula">R ≈ (<span id="static-v0-3">12</span>² × sin(2×<span id="static-angle-3">45</span>°)) / <span id="static-g">1</span> = <span id="static-range">144</span></div>
+            </div>
         </div>
-        <div class="equation">
-            <div class="equation-title">Vertical Velocity:</div>
-            <div class="equation-formula">vᵧ = v₀ × sin(θ)</div>
-            <div class="equation-description">Determines the arc height of water spray</div>
-        </div>
-        <div class="equation">
-            <div class="equation-title">Range Formula:</div>
-            <div class="equation-formula">R = (v₀² × sin(2θ)) / g</div>
-            <div class="equation-description">Maximum range occurs at θ = 45° (for level ground)</div>
+        
+        <!-- AquaArc Sprinkler -->
+        <div style="background: #e3f2fd; padding: 15px; border-radius: 10px; border: 2px solid #2196F3;">
+            <h4 style="color: #1976D2; margin-bottom: 10px;">🔵 AquaArc Smart Sprinkler (Adjustable)</h4>
+            <div class="equation">
+                <div class="equation-title">Horizontal Velocity:</div>
+                <div class="equation-formula">vₓ = <span id="smart-v0">8.0</span> × cos(<span id="smart-angle">45</span>°) = <span id="smart-vx">5.66</span></div>
+            </div>
+            <div class="equation">
+                <div class="equation-title">Vertical Velocity:</div>
+                <div class="equation-formula">vᵧ = <span id="smart-v0-2">8.0</span> × sin(<span id="smart-angle-2">45</span>°) = <span id="smart-vy">5.66</span></div>
+            </div>
+            <div class="equation">
+                <div class="equation-title">Estimated Range:</div>
+                <div class="equation-formula">R ≈ (<span id="smart-v0-3">8.0</span>² × sin(2×<span id="smart-angle-3">45</span>°)) / <span id="smart-g">1</span> = <span id="smart-range">64</span></div>
+            </div>
         </div>
     </div>
     
@@ -403,12 +430,55 @@
             document.getElementById('angle-slider').addEventListener('input', (e) => {
                 smartAngle = parseFloat(e.target.value);
                 document.getElementById('angle-value').textContent = smartAngle + '°';
+                updateFormulas();
             });
             
             document.getElementById('power-slider').addEventListener('input', (e) => {
                 smartPower = parseFloat(e.target.value);
                 document.getElementById('power-value').textContent = smartPower.toFixed(1);
+                updateFormulas();
             });
+            
+            // Initialize formulas
+            updateFormulas();
+        }
+        
+        function updateFormulas() {
+            // Static sprinkler (fixed values)
+            const staticV0 = 12;
+            const staticAngle = 45;
+            const staticAngleRad = radians(staticAngle);
+            const staticVx = staticV0 * cos(staticAngleRad);
+            const staticVy = staticV0 * sin(staticAngleRad);
+            const staticRange = (staticV0 * staticV0 * sin(2 * staticAngleRad)) / 1;
+            
+            document.getElementById('static-v0').textContent = staticV0.toFixed(1);
+            document.getElementById('static-v0-2').textContent = staticV0.toFixed(1);
+            document.getElementById('static-v0-3').textContent = staticV0.toFixed(1);
+            document.getElementById('static-angle').textContent = staticAngle;
+            document.getElementById('static-angle-2').textContent = staticAngle;
+            document.getElementById('static-angle-3').textContent = staticAngle;
+            document.getElementById('static-vx').textContent = staticVx.toFixed(2);
+            document.getElementById('static-vy').textContent = staticVy.toFixed(2);
+            document.getElementById('static-range').textContent = staticRange.toFixed(0);
+            document.getElementById('static-g').textContent = '1';
+            
+            // Smart sprinkler (adjustable values)
+            const smartAngleRad = radians(smartAngle);
+            const smartVx = smartPower * cos(smartAngleRad);
+            const smartVy = smartPower * sin(smartAngleRad);
+            const smartRange = (smartPower * smartPower * sin(2 * smartAngleRad)) / 1;
+            
+            document.getElementById('smart-v0').textContent = smartPower.toFixed(1);
+            document.getElementById('smart-v0-2').textContent = smartPower.toFixed(1);
+            document.getElementById('smart-v0-3').textContent = smartPower.toFixed(1);
+            document.getElementById('smart-angle').textContent = smartAngle;
+            document.getElementById('smart-angle-2').textContent = smartAngle;
+            document.getElementById('smart-angle-3').textContent = smartAngle;
+            document.getElementById('smart-vx').textContent = smartVx.toFixed(2);
+            document.getElementById('smart-vy').textContent = smartVy.toFixed(2);
+            document.getElementById('smart-range').textContent = smartRange.toFixed(0);
+            document.getElementById('smart-g').textContent = '1';
         }
         
         function draw() {
